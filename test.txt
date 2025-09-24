@@ -1,8 +1,116 @@
-int a = 5;
-int b = 6;
+// single line comment
 
-if (a+b == 10) {
-    print("Hello");
+/*
+  multiline comment
+*/
+
+val x: Int = 42
+val name: String = "Scala"
+var isActive: Boolean = true
+
+val sum = 5 + 3
+val product = 6 * 7
+val isEqual = 10 == 20
+val isNotEqual = 10 != 5
+val isGreater = 10 > 5
+val isLess = 5 < 10
+val andCondition = true && false
+val orCondition = true || false
+val negated = !isActive
+
+class Point(var x: Int, var y: Int):
+
+  def move(dx: Int, dy: Int): Unit =
+    x = x + dx
+    y = y + dy
+
+  override def toString: String =
+    s"($x, $y)"
+end Point
+
+if (x > 0) {
+  println("x is positive")
 } else {
-    print("goodbye");
+  println("x is non-positive")
 }
+
+for (i <- 1 to 5) {
+  println(i)
+}
+
+while (x > 0) {
+  println(x)
+  x -= 1
+}
+
+def add(a: Int, b: Int): Int = a + b
+def greet(name: String): String = s"Hello, $name"
+
+class Person(val name: String, val age: Int) {
+  def greet(): String = s"Hi, I'm $name and I'm $age years old"
+}
+
+object Main {
+  def main(args: Array[String]): Unit = {
+    val person = new Person("Alice", 25)
+    println(person.greet())
+  }
+}
+
+val numbers = List(1, 2, 3, 4, 5)
+val doubledNumbers = numbers.map(_ * 2)
+val filteredNumbers = numbers.filter(_ % 2 == 0)
+
+def printList[A](list: List[A]): Unit = {
+  list.foreach(println)
+}
+
+val someValue: Option[Int] = Some(10)
+val noValue: Option[Int] = None
+
+val result = someValue match {
+  case Some(value) => s"Value: $value"
+  case None => "No value"
+}
+
+val number = 5
+val result2 = number match {
+  case 1 => "One"
+  case 2 => "Two"
+  case _ => "Other"
+}
+
+val str: String = "Hello, Scala"
+val i: Int = 42
+
+val singleQuotedString = 'Scala'
+val tripleQuotedString = """This is a multi-line
+string in Scala."""
+val interpolatedString = s"Hello, $name!"
+val formattedString = f"Pi is approximately %.2f"
+val rawString = raw"This is a raw\nstring"
+val stringWithBraces = s"The value of x is ${x * 2}"
+
+val decimalNumber = 42
+val hexNumber = 0x2A
+val binaryNumber = 0b101010
+val octalNumber = 0o52
+val floatNumber = 42.0f
+val doubleNumber = 42.0
+val scientificNumber = 1.23e4
+
+val largeNumber = 1_000_000
+val doubleWithUnderscore = 1_234_567.89
+
+type aliasType = String
+given stringOrdering: Ordering[String] = Ordering[String]
+
+val square = (x: Int) => x * x
+val addTwo = (x: Int, y: Int) => x + y
+
+val tuple = (1, "Scala")
+val (num, language) = tuple
+val result3 = (for {
+  x <- Some(2)
+  y <- Some(3)
+} yield x + y).getOrElse(0)

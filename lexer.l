@@ -13,14 +13,26 @@
 	#include <cstring>
 	#include <stdbool.h>
 	#include <stack>
+	#include <algorithm>
 	std::string buff = "";
 %}
 
+ID [A-Za-z0-9_$]+
+
 digit [0-9]
-hexDigit [0-9a-fA-F]
 notZeroDigit [1-9]
-decimalNumeral 0|{notZeroDigit}({digit}|"_")*
-hexNumeral 0(x|X){hexDigit}({hexDigit}|"_")*
+binDigit [01]
+hexDigit [0-9a-fA-F]
+
+decimalLiteral 0|{notZeroDigit}({digit}|"_")*
+hexLiteral 0(x|X){hexDigit}({hexDigit}|"_")*
+binLiteral 0(b|B){binDigit}({binDigit}|"_")*
+
+exponentPart [eE][+-]?{digit}+
+floatSuffix [fFdD]
+doubleLiteral ({digit}+\.{digit}+({exponentPart})?({floatSuffix})?)|(\.{digit}+({exponentPart})?({floatSuffix})?)|({digit}+{exponentPart}({floatSuffix})?)|({digit}+{floatSuffix})
+
+
 UnicodeEscape \\u+{hexDigit}{4}
 latinLetter [a-zA-Z]
 %%
@@ -35,6 +47,9 @@ latinLetter [a-zA-Z]
     void printContextKeyword(char* keyword);
     void printConstantKeyword(char* keyword);
     void printOperator(char* keyword);
+    std::string remove_underscore(const char* text);
+    long long to_int(const char* text, int base = 10);
+    double to_double(const char* text);
 %}
 
 "//".* { printf("Oneline comment: %s", yytext + 2); }
@@ -104,7 +119,34 @@ true        { printConstantKeyword(yytext); }
 false       { printConstantKeyword(yytext); }
 null        { printConstantKeyword(yytext); }
 
-[A-Za-z0-9_$]+ { std::cout << "Identifier: " << yytext << std::endl; }
+{decimalLiteral} {
+    long long val = to_int(yytext, 10);
+    std::cout << "Decimal literal: " << yytext << " -> " << val << std::endl;
+}
+
+{hexLiteral} {
+    long long val = to_int(yytext, 16);
+    std::cout << "Hex literal: " << yytext << " -> " << val << std::endl;
+}
+
+{binLiteral} {
+    std::string s = remove_underscore(yytext);
+    // убираем префикс 0b/0B
+    if (s.rfind("0b", 0) == 0 || s.rfind("0B", 0) == 0)
+        s = s.substr(2);
+    long long val = 0;
+    for (char c : s) {
+        val = (val << 1) | (c - '0');
+    }
+    std::cout << "Binary literal: " << yytext << " -> " << val << std::endl;
+}
+
+{doubleLiteral} {
+    double val = to_double(yytext);
+    std::cout << "Double literal: " << yytext << " -> " << val << std::endl;
+}
+
+ID { std::cout << "Identifier: " << yytext << std::endl; }
 
 
 Int { printf("Integer type: %s\n", yytext); }
@@ -120,10 +162,6 @@ Unit { printf("Unit type: %s\n", yytext); }
 Array { printf("Array type: %s\n", yytext); }
 
 Double { printf("Double type: %s\n", yytext); }
-
-
-
-
 
 
 
@@ -146,6 +184,23 @@ int main(int argc, char **argv)
     fclose(yyin);
     return 0;
 }
+
+std::string remove_underscore(const char* text) {
+    std::string s(text);
+    s.erase(std::remove(s.begin(), s.end(), '_'), s.end());
+    return s;
+}
+
+long long to_int(const char* text, int base = 10) {
+    std::string s = remove_underscore(text);
+    return strtoll(s.c_str(), NULL, base);
+}
+
+double to_double(const char* text) {
+    std::string s = remove_underscore(text);
+    return atof(s.c_str());
+}
+
 
 void printTypeDefinitionKeyword(char* keyword) {
     printf("Type definition keyword: %s\n", keyword);

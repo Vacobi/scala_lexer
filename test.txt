@@ -1,8 +1,8 @@
 // single line comment
 
-/*
+/* aaaa
   multiline comment
-*/
+aaaa */
 
 val x: Int = 42
 val name: String = "Scala"

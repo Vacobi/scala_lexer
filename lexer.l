@@ -13,7 +13,9 @@
 	#include <cstring>
 	#include <stdbool.h>
 	#include <stack>
+
 	std::string buff = "";
+	char literal[1000];
 %}
 
 digit [0-9]
@@ -43,6 +45,16 @@ latinLetter [a-zA-Z]
 <MULTILINE_COMMENT>[^*]+ { buff += yytext; }
 <MULTILINE_COMMENT>\*+[^/] { buff += yytext; }
 <MULTILINE_COMMENT>\*+\/ { std::cout << "Multiline comment: " << buff << std::endl; BEGIN(INITIAL); }
+
+
+Int     { printf("Integer type: %s\n", yytext); }
+Char    { printf("Character type: %s\n", yytext); }
+String  { printf("String type: %s\n", yytext); }
+Boolean { printf("Boolean type: %s\n", yytext); }
+Unit    { printf("Unit type: %s\n", yytext); }
+Array   { printf("Array type: %s\n", yytext); }
+Double  { printf("Double type: %s\n", yytext); }
+
 
 class       { printTypeDefinitionKeyword(yytext); }
 trait       { printTypeDefinitionKeyword(yytext); }
@@ -104,28 +116,61 @@ true        { printConstantKeyword(yytext); }
 false       { printConstantKeyword(yytext); }
 null        { printConstantKeyword(yytext); }
 
-[A-Za-z0-9_$]+ { std::cout << "Identifier: " << yytext << std::endl; }
 
+[A-Za-z0-9_$]*_\?|[A-Za-z0-9_$]+ { std::cout << "Identifier: " << yytext << std::endl; }
 
-Int { printf("Integer type: %s\n", yytext); }
+":"     { printOperator(yytext); }
 
-Char { printf("Character type: %s\n", yytext); }
+";"     { std::cout << "Instruction delimeter: " << yytext << std::endl; }
 
-String { printf("String type: %s\n", yytext); }
+"("     { printOperator(yytext); }
+")"     { printOperator(yytext); }
 
-Boolean { printf("Boolean type: %s\n", yytext); }
+"}"     { printOperator(yytext); }
+"{"     { printOperator(yytext); }
 
-Unit { printf("Unit type: %s\n", yytext); }
+"["     { printOperator(yytext); }
+"]"     { printOperator(yytext); }
 
-Array { printf("Array type: %s\n", yytext); }
+"+"     { printOperator(yytext); }
+"-"     { printOperator(yytext); }
+"*"     { printOperator(yytext); }
+"/"     { printOperator(yytext); }
+"%"     { printOperator(yytext); }
 
-Double { printf("Double type: %s\n", yytext); }
+"=="    { printOperator(yytext); }
+"!="    { printOperator(yytext); }
+">"     { printOperator(yytext); }
+"<"     { printOperator(yytext); }
+">="    { printOperator(yytext); }
+"<="    { printOperator(yytext); }
 
+"&&"    { printOperator(yytext); }
+"||"    { printOperator(yytext); }
+"!"     { printOperator(yytext); }
 
+"&"     { printOperator(yytext); }
+"|"     { printOperator(yytext); }
+"^"     { printOperator(yytext); }
+"~"     { printOperator(yytext); }
+"<<"    { printOperator(yytext); }
+">>"    { printOperator(yytext); }
+">>>"   { printOperator(yytext); }
 
+"="     { printOperator(yytext); }
+"+="    { printOperator(yytext); }
+"-="    { printOperator(yytext); }
+"*="    { printOperator(yytext); }
+"/="    { printOperator(yytext); }
+"%="    { printOperator(yytext); }
+"<<="   { printOperator(yytext); }
+">>="   { printOperator(yytext); }
+"&="    { printOperator(yytext); }
+"^="    { printOperator(yytext); }
+"|="    { printOperator(yytext); }
 
-
-
+"to"    { printOperator(yytext); }
+"until" { printOperator(yytext); }
 
 %%
 

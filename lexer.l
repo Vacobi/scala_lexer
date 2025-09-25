@@ -23,7 +23,6 @@ decimalNumeral 0|{notZeroDigit}({digit}|"_")*
 hexNumeral 0(x|X){hexDigit}({hexDigit}|"_")*
 UnicodeEscape \\u+{hexDigit}{4}
 latinLetter [a-zA-Z]
-
 %%
 
 %{
@@ -35,6 +34,7 @@ latinLetter [a-zA-Z]
     void printObjectDefinitionKeyword(char* keyword);
     void printContextKeyword(char* keyword);
     void printConstantKeyword(char* keyword);
+    void printOperator(char* keyword);
 %}
 
 "//".* { printf("Oneline comment: %s", yytext + 2); }
@@ -104,10 +104,22 @@ true        { printConstantKeyword(yytext); }
 false       { printConstantKeyword(yytext); }
 null        { printConstantKeyword(yytext); }
 
+[A-Za-z0-9_$]+ { std::cout << "Identifier: " << yytext << std::endl; }
 
 
+Int { printf("Integer type: %s\n", yytext); }
 
+Char { printf("Character type: %s\n", yytext); }
 
+String { printf("String type: %s\n", yytext); }
+
+Boolean { printf("Boolean type: %s\n", yytext); }
+
+Unit { printf("Unit type: %s\n", yytext); }
+
+Array { printf("Array type: %s\n", yytext); }
+
+Double { printf("Double type: %s\n", yytext); }
 
 
 
@@ -165,4 +177,8 @@ void printContextKeyword(char* keyword) {
 
 void printConstantKeyword(char* keyword) {
     printf("Constant keyword: %s\n", keyword);
+}
+
+void printOperator(char* keyword) {
+    printf("Operator: %s\n", keyword);
 }

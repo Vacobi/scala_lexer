@@ -8,5 +8,16 @@ find_package(FLEX REQUIRED)
 
 FLEX_TARGET(MyScanner lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp)
 
-add_executable(lexer ${FLEX_MyScanner_OUTPUTS}
-        lexer.l)
+add_executable(lexer
+        ${FLEX_MyScanner_OUTPUTS}
+        lexer.l
+)
+
+# Отключаем предупреждения про "register" только для lexer.cpp
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set_source_files_properties(${FLEX_MyScanner_OUTPUTS}
+            PROPERTIES COMPILE_OPTIONS "-Wno-register")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set_source_files_properties(${FLEX_MyScanner_OUTPUTS}
+            PROPERTIES COMPILE_OPTIONS "/wd5033")
+endif()

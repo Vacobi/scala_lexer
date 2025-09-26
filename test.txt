@@ -9,8 +9,8 @@ val name: String = "Scala"
 var isActive: Boolean = true
 
 val sum = 5 + 3
-val product = 6 * 7
-val isEqual = 10 == 20
+val product = 6 * 7_5
+val isEqual = 10 == 20__25
 val isNotEqual = 10 != 5
 val isGreater = 10 > 5
 val isLess = 5 < 10
@@ -159,3 +159,7 @@ val result3 = (for {
 
 to
 until
+
+'\ta'
+
+"err expected

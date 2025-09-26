@@ -2,7 +2,6 @@
 %x MULTILINE_COMMENT
 %x STRING
 %x CHARACTER
-%x INT
 
 %{
 	#include <iostream>
@@ -16,10 +15,10 @@
 	#include <algorithm>
 
 	std::string buff = "";
-	char literal[1000];
+	std::string literal = "";
 %}
 
-ID [A-Za-z0-9_$]+
+ID [A-Za-z0-9_$]*_\?|[A-Za-z0-9_$]+
 
 digit [0-9]
 notZeroDigit [1-9]
@@ -34,9 +33,9 @@ exponentPart [eE][+-]?{digit}+
 floatSuffix [fFdD]
 doubleLiteral ({digit}+\.{digit}+({exponentPart})?({floatSuffix})?)|(\.{digit}+({exponentPart})?({floatSuffix})?)|({digit}+{exponentPart}({floatSuffix})?)|({digit}+{floatSuffix})
 
-
 UnicodeEscape \\u+{hexDigit}{4}
 latinLetter [a-zA-Z]
+
 %%
 
 %{
@@ -48,13 +47,14 @@ latinLetter [a-zA-Z]
     void printObjectDefinitionKeyword(char* keyword);
     void printContextKeyword(char* keyword);
     void printConstantKeyword(char* keyword);
-    void printOperator(char* keyword);
+    void printOperator(char* oper);
+    void printSyntaxToken(char* token);
     std::string remove_underscore(const char* text);
     long long to_int(const char* text, int base = 10);
     double to_double(const char* text);
 %}
 
-"//".* { printf("Oneline comment: %s", yytext + 2); }
+"//".* { printf("Oneline comment: %s\n", yytext + 2); }
 
 "/*" { BEGIN(MULTILINE_COMMENT); buff = ""; }
 <MULTILINE_COMMENT>[^*]+ { buff += yytext; }
@@ -131,6 +131,7 @@ true        { printConstantKeyword(yytext); }
 false       { printConstantKeyword(yytext); }
 null        { printConstantKeyword(yytext); }
 
+
 {decimalLiteral} {
     long long val = to_int(yytext, 10);
     std::cout << "Decimal literal: " << yytext << " -> " << val << std::endl;
@@ -158,14 +159,16 @@ null        { printConstantKeyword(yytext); }
     std::cout << "Double literal: " << yytext << " -> " << val << std::endl;
 }
 
-ID { std::cout << "Identifier: " << yytext << std::endl; }
 
+{ID} { std::cout << "Identifier: " << yytext << std::endl; }
 
-[A-Za-z0-9_$]*_\?|[A-Za-z0-9_$]+ { std::cout << "Identifier: " << yytext << std::endl; }
+"."     { printSyntaxToken(yytext); }
 
-":"     { printOperator(yytext); }
+","     { printSyntaxToken(yytext); }
 
-";"     { std::cout << "Instruction delimeter: " << yytext << std::endl; }
+":"     { printSyntaxToken(yytext); }
+
+";"     { printSyntaxToken(yytext); }
 
 "("     { printOperator(yytext); }
 ")"     { printOperator(yytext); }
@@ -215,6 +218,60 @@ ID { std::cout << "Identifier: " << yytext << std::endl; }
 
 "to"    { printOperator(yytext); }
 "until" { printOperator(yytext); }
+
+
+\" { literal = ""; BEGIN(STRING); }
+<STRING>[^\\\n\"]+ literal.append(yytext);
+<STRING,CHARACTER>\\n { literal.append("\n"); }
+<STRING,CHARACTER>\\\\ { literal.append("\\"); }
+<STRING,CHARACTER>\\b { literal.append("\b"); }
+<STRING,CHARACTER>\\t { literal.append("\t"); }
+<STRING,CHARACTER>\\f {literal.append("\f"); }
+<STRING,CHARACTER>\\r { literal.append("\r"); }
+<STRING,CHARACTER>\\\" { literal.append("\""); }
+<STRING,CHARACTER>\\\' { literal.append("\'"); }
+<STRING,CHARACTER>{UnicodeEscape} {
+    char ch = (char)strtol(yytext + strlen(yytext) - 4, NULL, 16);
+    literal.append(1, ch);
+}
+<STRING>\" {
+    std::cout << "String literal: " << literal << "\n" << std::endl;
+    BEGIN(INITIAL);
+}
+<STRING,CHARACTER>\n {
+    std::cerr << "error: newline inside literal\n" << std::endl;
+    BEGIN(INITIAL);
+}
+<STRING><<EOF>> {
+    std::cerr << "error: file ends before literal ends\n" << std::endl;
+    BEGIN(INITIAL);
+}
+
+\' { literal = ""; BEGIN(CHARACTER); }
+<CHARACTER>[^\'\\\n]+ {
+    literal.append(yytext);
+}
+<CHARACTER>\' {
+    if(literal.length() == 0){
+        std::cerr << "error: empty character\n" << std::endl;
+    } else if (literal.length() == 1){
+        char ch = literal[0];
+        printf("Char literal: %c\n", ch);
+    } else {
+        std::cerr << "error: more than one character in string literal: " << literal << std::endl;
+    }
+    BEGIN(INITIAL);
+}
+<CHARACTER><<EOF>> {
+    std::cerr << "error: no end of character\n" << std::endl;
+    BEGIN(INITIAL);
+}
+
+
+" "  { std::cout << "+++Whitespace+++" << std::endl; }
+"\n" { std::cout << "------------------Newline------------------" << std::endl; }
+
+<*>.     { std::cerr << "Unexpected char " << yytext[0] << "encountered at line\n"; BEGIN(INITIAL);}
 
 %%
 
@@ -285,6 +342,10 @@ void printConstantKeyword(char* keyword) {
     printf("Constant keyword: %s\n", keyword);
 }
 
-void printOperator(char* keyword) {
-    printf("Operator: %s\n", keyword);
+void printOperator(char* oper) {
+    printf("Operator: %s\n", oper);
+}
+
+void printSyntaxToken(char* token) {
+    printf("Syntax token: %s\n", token);
 }
